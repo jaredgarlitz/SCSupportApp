@@ -1,0 +1,53 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site1.master.cs" Inherits="SCSupportApp.Site1" %>
+
+<!DOCTYPE html>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<html>
+<%--<html xlmns="https://www.w3.org/1999/xhtml">--%>
+    
+<head runat="server">
+    <title></title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous" />
+    <link href="~/Content/Master.css" rel="stylesheet" />
+    <asp:ContentPlaceHolder ID="head" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body>
+    <!DOCTYPE html>
+    <header id="header">
+ <%--       <nav id="nav" >
+        <ul class="nav nav-pills">
+            <li class="nav-item"><a class="nav-link" href="WebForm1.aspx">Check Token</a></li>
+            <li class="nav-item"><a class="nav-link" href="ItemsAvailable.aspx">Shop</a></li>
+        </ul>
+    </nav>--%>
+        <div class="pos-f-t">
+            <div class="collapse" id="navbarToggleExternalContent".>
+                <div class="bg-dark p-4">
+                    <h5 class="text-white h4">test header navbar</h5>
+                    <span class="text-muted">toggleable data via navbar</span>
+                </div>
+             </div>
+            <nav class="navbar navbar-dark bg-dark">
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle Navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </nav>
+        </div>
+            
+    </header>
+    <form id="form1" runat="server">
+        <div>
+            <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">
+            </asp:ContentPlaceHolder>
+            <asp:ContentPlaceHolder ID="genTokenPlaceHolder" runat="server">
+            </asp:ContentPlaceHolder>
+        </div>
+    </form>
+    <script src="Scripts/bootstrap.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+</body>
+</html>
