@@ -3,6 +3,11 @@
 <asp:Content ID="tokenGen" ContentPlaceHolderID="genTokenPlaceHolder" runat="server">
     <%--<asp:DropDownList ID="typeSelect" runat="server" />--%>
     <div class="container">
+        <asp:DropDownList ID="type" runat="server" AutoPostBack="true">
+            <asp:ListItem Text="Accountant" Value="0" />
+            <asp:ListItem Text="Client" Value="1" />
+        </asp:DropDownList>
+        <asp:TextBox ID="Partner" runat="server" placeholder ="Accountant ID" />
         <asp:TextBox ID="Site" runat="server" placeholder="Site #" />
         <asp:TextBox ID="Secret" runat="server" placeholder="API Secret" />
         <asp:Button ID="sendTo" class="btn btn-success btn-sm" Text="Check" runat="server" />
@@ -11,7 +16,7 @@
     </div>
     <div class="container-sm">
         <div class="accordion" id="addPunch">
-            <div class="card">
+            <%--<div class="card">
                 <div class="card-header" id="addPunchHeader">
                     <h2 class="mb-0">
                         <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
@@ -24,7 +29,7 @@
                         This is where we are going to add the fields for the addpunch api.
                     </div>
                 </div>
-            </div>
+            </div>--%>
             <div class="card">
                 <div class="card-header" id="headingTwo">
                     <h2 class="mb-0">

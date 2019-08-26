@@ -16,15 +16,9 @@ namespace SCSupportApp.Controllers
 {
     public class token
     {
-        public static string creator(int site, string secret, bool isClient = true, string accountant = "")
+        public static string creator(int site, string secret, bool isAccountant = false, string accountant = "")
         {
-            var token2 = new JwtBuilder()
-                .WithAlgorithm(new HMACSHA256Algorithm())
-                .WithSecret(secret)
-                .AddClaim("exp", DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeSeconds())
-                .AddClaim("claim2", "claim2-value")
-                .Build();
-            if (isClient)
+            if (isAccountant)
             {
                 Dictionary<string, object> siteInfo = new Dictionary<string, object>();
                 siteInfo.Add("type", "id");
@@ -33,10 +27,10 @@ namespace SCSupportApp.Controllers
                 var clientToken = new JwtBuilder()
                     .WithAlgorithm(new HMACSHA256Algorithm())
                     .WithSecret(secret)
-                    .AddClaim("iss", site)
-                    .AddClaim("sub", "client")
-                    .AddClaim("exp", DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeSeconds())
-                    .AddClaim("product", "twpclient")
+                    .AddClaim("iss", accountant)
+                    .AddClaim("sub", "partner")
+                    .AddClaim("exp", DateTimeOffset.UtcNow.AddMinutes(3).ToUnixTimeSeconds())
+                    .AddClaim("product", "twppartner")
                     .AddClaim("siteInfo", siteInfo)
                     .Build();
                 return clientToken.ToString();
@@ -50,10 +44,10 @@ namespace SCSupportApp.Controllers
                 var clientToken = new JwtBuilder()
                     .WithAlgorithm(new HMACSHA256Algorithm())
                     .WithSecret(secret)
-                    .AddClaim("iss", accountant)
-                    .AddClaim("sub", "partner")
-                    .AddClaim("exp", DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeSeconds())
-                    .AddClaim("product", "twppartner")
+                    .AddClaim("iss", site)
+                    .AddClaim("sub", "client")
+                    .AddClaim("exp", DateTimeOffset.UtcNow.AddMinutes(3).ToUnixTimeSeconds())
+                    .AddClaim("product", "twpclient")
                     .AddClaim("siteInfo", siteInfo)
                     .Build();
                 return clientToken.ToString();

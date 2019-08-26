@@ -18,8 +18,9 @@ namespace SCSupportApp
         public static int accountantId;
         public string accountantIDString = "";
         public static string token = "";
+        public static string returnAuthToken = "";
 
-        bool tokenValid = false;
+        public static bool tokenValid = false;
 
         private Button btnAdd = new Button();
         private Label lblAdd = new Label();
@@ -38,6 +39,7 @@ namespace SCSupportApp
             }
             else
             {
+                if (type.SelectedValue == "1") Partner.Enabled = false;
                 siteIdString = Site.Text;
                 siteId = toNumber(siteIdString);
                 apiSecret = Secret.Text;
@@ -100,16 +102,13 @@ namespace SCSupportApp
             return Int32.TryParse(str, out result) ? result : defaultValue;
         }
 
-        protected void sendTo_Click(object sender, EventArgs e)
+        protected async void sendTo_Click(object sender, EventArgs e)
         {
             siteIdString = Site.Text;
             siteId = toNumber(siteIdString);
             apiSecret = Secret.Text;
-            token = Controllers.token.creator(siteId, apiSecret);
+            returnAuthToken = await Controllers.token.PostAuth(Controllers.token.creator(siteId, apiSecret), apiSecret);
 
-            loadLabel.Text = "Your Token expires at " + DateTimeOffset.UtcNow.AddMinutes(5).ToLocalTime().ToString("hh:mm tt");
-            tokenID.Text = token.ToString();
-            tokenID.Visible = false;
             if (!token.Contains("Jwt.JwtBuilder")) tokenValid = true;
             getAccrualSchema.Enabled = tokenValid;
         }
@@ -120,18 +119,20 @@ namespace SCSupportApp
             siteId = toNumber(siteIdString);
             string values = "";
 
-            List<TWP_AccrualsSchema> accSchema = await TWPSDK.getAccrualSchema(siteId, token);
+            List<TWP_AccrualsSchema> accSchema = await TWPSDK.getAccrualSchema(siteId, returnAuthToken);
 
             try
             {
-                await AuthorizeAPI();
-                
-
                 foreach (TWP_AccrualsSchema value in accSchema)
                 {
-                    values += $"{value},";
-                    this.Controls.Add(btnAdd);
-                    btnAdd.Text = value.Category;
+                    var button = new Button
+                    {
+                        ID = value.Category,
+                        Text = value.Category,
+                        CommandArgument = value.ToString()
+                    };
+                    button.Command += Load_Items;
+                    Controls.Add(button);
                 }
                 accrualvalues.InnerText = $"{values}";
             }
@@ -140,7 +141,11 @@ namespace SCSupportApp
             {
                 Console.WriteLine($"Validation Client Accrual Schema: an exception occurred: {ex.Message}");
             }
-            await Task.Run(() => TWPSDK.getAccrualSchema(siteId, token));
+        }
+
+        private void Load_Items(object sender, CommandEventArgs e)
+        {
+            int id = Convert.ToInt32(e.CommandArgument);
         }
 
         public static async Task AuthorizeAPI()
