@@ -98,6 +98,23 @@ namespace SCSupportApp.Controllers
             return (HttpWebResponse)(await request.GetResponseAsync());
         }
 
+        #region Employee
+
+        public static async Task<List<TWP_Employee_Schema>> listEESchema(int siteId, string APIToken)
+        {
+            List<TWP_Employee_Schema> EESchema = new List<TWP_Employee_Schema>();
+            string pagedURL = $"{TWPApiUtil.Employee_Schema_EndPoint}";
+            //while(!String.IsNullOrEmpty(pagedURL))
+            //{
+                string APIResponse = await CallTWPAPI(siteId, APIToken, pagedURL, HttpMethod.Get);
+
+                TWP_Employee_Schema result = JsonConvert.DeserializeObject<TWP_Employee_Schema>(APIResponse);
+
+                EESchema.Add(result);
+            //}
+            return EESchema;
+        }
+
         public static async Task<List<TWP_Employee>> ListEmployees(int siteId, string APIToken)
         {
             List<TWP_Employee> AllEmployees = new List<TWP_Employee>();
@@ -121,6 +138,53 @@ namespace SCSupportApp.Controllers
 
             await CallTWPAPI(siteId, APIToken, upsertURL, HttpMethod.Post, updateEmployee);
         }
+
+        public static async Task<List<TWP_Group>> getEEGroups(int siteId, string APIToken, string showGroupsBy = "")
+        {
+            List<TWP_Group> allGroups = new List<TWP_Group>();
+
+            string pagedURL = $"{TWPApiUtil.Employees_Groups_EndPoint}";
+            if (!string.IsNullOrEmpty(showGroupsBy)) pagedURL += $"?showGroupsBy={showGroupsBy}";
+
+            while (!String.IsNullOrEmpty(pagedURL))
+            {
+                string APIResponse = await CallTWPAPI(siteId, APIToken, pagedURL, HttpMethod.Get);
+
+                TWP_API_List_Response result = JsonConvert.DeserializeObject<TWP_API_List_Response>(APIResponse);
+
+                allGroups.AddRange(result.Results.Select(groupJson => groupJson.ToObject<TWP_Group>()));
+                pagedURL = result.NextPageLink;
+            }
+            return allGroups;
+        }
+
+        public static async void connectEEManLogin(int siteId, string APIToken)
+        {
+
+        }
+
+        public static async void disconnectEEManLogin(int siteId, string APIToken)
+        {
+
+        }
+
+        public static async void resetEEPassword(int siteId, string APIToken)
+        {
+
+        }
+
+        public static async void setEEPassword(int siteId, string APIToken)
+        {
+
+        }
+
+        public static async void updateEEPassword(int siteId, string APIToken)
+        {
+
+        }
+        #endregion
+
+        #region PayrollActivities
 
         public static async Task<List<string>> getPayrollFormats(int siteId, string APIToken)
         {
@@ -150,6 +214,15 @@ namespace SCSupportApp.Controllers
                 await CallTWPAPI(siteId, APIToken, payrollActivityURL, HttpMethod.Post, requestBody));
         }
 
+        public static async void getActivitiesByPayPeriod (int siteId, string APIToken)
+        {
+
+        }
+
+        #endregion
+
+        #region TimeCard
+
         public static async Task<JObject> getTimeCardDetails(int siteId, string APIToken, DateTime? payPeriodDate = null, List<string> employeeIds = null)
         {
             string dateParam = TWPApiUtil.FormatAPIDate(payPeriodDate ?? DateTime.Now);
@@ -165,6 +238,49 @@ namespace SCSupportApp.Controllers
 
             return JObject.Parse(timecardDetailsJSON);
         }
+
+        public static async Task<JObject> getTimeCardSum(int siteId, string APIToken, DateTime? payPeriodDate = null, List<string> employeeIds = null)
+        {
+            string dateParam = TWPApiUtil.FormatAPIDate(payPeriodDate ?? DateTime.Now);
+
+            string timecardSumURL = $"{TWPApiUtil.getTimeCardSum}?periodDate={dateParam}";
+
+            if(employeeIds.safeCount() > 0)
+            {
+                timecardSumURL += $"&ids={String.Join(",", employeeIds)}";
+            }
+
+            string timecardsumJSON = await CallTWPAPI(siteId, APIToken, timecardSumURL);
+
+            return JObject.Parse(timecardsumJSON);
+        }
+
+        public static async void deleteTimeCardLine(int siteId, string APIToken)
+        {
+
+        }
+
+        public static async void approveTimeCard(int siteId, string APIToken)
+        {
+
+        }
+
+        public static async void editTimeCardLine(int siteId, string APIToken)
+        {
+
+        }
+
+        public static async void addNote(int siteId, string APIToken)
+        {
+
+        }
+
+        public static async void addPunch(int siteId, string APIToken)
+        {
+
+        }
+
+        #endregion
 
         public static async Task<string> getSSOLink(string APISecret, int partnerId, int siteId, string APIToken, APIProduct ssoType, string ssoUserIdenfitier)
         {
@@ -183,6 +299,8 @@ namespace SCSupportApp.Controllers
 
             return ssoURL + await GetJWTToken(APISecret, ssoPayload);
         }
+
+        #region Accruals
 
         public static async Task<List<TWP_AccrualsSchema>> getAccrualSchema(int siteId, string APIToken)
         {
@@ -235,17 +353,17 @@ namespace SCSupportApp.Controllers
                 pagedURL += $"&startDate={TWPApiUtil.FormatAPIDate(startDate.Value)}";
             }
 
-            if(endDate != null)
+            if (endDate != null)
             {
                 pagedURL += $"&endDate={TWPApiUtil.FormatAPIDate(endDate.Value)}";
             }
 
-            if(category != null)
+            if (category != null)
             {
                 pagedURL += $"&category={category}";
             }
 
-            if(employeeIds.safeCount() > 0)
+            if (employeeIds.safeCount() > 0)
             {
                 pagedURL += $"ids={String.Join(",", employeeIds)}";
             }
@@ -262,5 +380,68 @@ namespace SCSupportApp.Controllers
 
             return allAccruals;
         }
+
+        #endregion
+
+        #region TORS
+
+        public static async Task<List<JObject>> getTORCats(int siteId, string APIToken)
+        {
+            string apiResponse = await CallTWPAPI(siteId, APIToken, $"{TWPApiUtil.TORCats}", HttpMethod.Get);
+
+            return JsonConvert.DeserializeObject<List<JObject>>(apiResponse);
+        }
+
+        public static async void getTORbyEEId(int siteId, string APIToken)
+        {
+
+        }
+
+        public static async void getTORbyId (int siteId, string APIToken)
+        {
+
+        }
+
+        public static async void getTORbyEEIdDept (int siteId, string APIToken)
+        {
+
+        }
+
+        public static async void getTORSchema (int siteId, string APIToken)
+        {
+
+        }
+
+        public static async void getTORBySup(int siteId, string APIToken)
+        {
+
+        }
+
+        #endregion
+
+        #region Logins
+
+        public static async Task<List<JObject>> getLogins (int siteId, string APIToken)
+        {
+            string apiResponse = await CallTWPAPI(siteId, APIToken, $"{TWPApiUtil.Logins}", HttpMethod.Get);
+
+            return JsonConvert.DeserializeObject<List<JObject>>(apiResponse);
+        }
+
+        #endregion
+
+        #region Rules
+
+        public static async Task<List<TWP_Rules>> getRules(int siteId, string APIToken)
+        {
+            string rulesResult = await CallTWPAPI(siteId, APIToken, TWPApiUtil.Rules);
+            return JsonConvert.DeserializeObject<List<TWP_Rules>>(rulesResult);
+        }
+
+        #endregion
+
+        #region Schedules
+
+        #endregion
     }
 }

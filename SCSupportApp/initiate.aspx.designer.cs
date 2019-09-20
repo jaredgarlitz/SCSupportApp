@@ -22,6 +22,15 @@ namespace SCSupportApp {
         protected global::System.Web.UI.WebControls.DropDownList type;
         
         /// <summary>
+        /// server control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList server;
+        
+        /// <summary>
         /// Partner control.
         /// </summary>
         /// <remarks>
@@ -94,31 +103,22 @@ namespace SCSupportApp {
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl accrualvalues;
         
         /// <summary>
-        /// getAccrualBalance control.
+        /// accrualCatPanel control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button getAccrualBalance;
+        protected global::System.Web.UI.WebControls.Panel accrualCatPanel;
         
         /// <summary>
-        /// getAccrualActivity control.
+        /// modal_panel control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button getAccrualActivity;
-        
-        /// <summary>
-        /// postUpdateAccrual control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button postUpdateAccrual;
+        protected global::System.Web.UI.WebControls.Panel modal_panel;
         
         /// <summary>
         /// getEmployeesSchema control.
@@ -137,6 +137,24 @@ namespace SCSupportApp {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button getEmployees;
+        
+        /// <summary>
+        /// downloadEmployees control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button downloadEmployees;
+        
+        /// <summary>
+        /// bulkUpsertEmployees control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button bulkUpsertEmployees;
         
         /// <summary>
         /// postUpdateEmployees control.
@@ -461,5 +479,23 @@ namespace SCSupportApp {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button postUnApproveTimeOffRequest;
+        
+        /// <summary>
+        /// resultsPanel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel resultsPanel;
+        
+        /// <summary>
+        /// resultsLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label resultsLabel;
     }
 }
