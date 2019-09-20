@@ -27,7 +27,7 @@ namespace SCSupportApp.Controllers
                 var clientToken = new JwtBuilder()
                     .WithAlgorithm(new HMACSHA256Algorithm())
                     .WithSecret(secret)
-                    .AddClaim("iss", accountant)
+                    .AddClaim("iss", initiate.toNumber(accountant))
                     .AddClaim("sub", "partner")
                     .AddClaim("exp", DateTimeOffset.UtcNow.AddMinutes(3).ToUnixTimeSeconds())
                     .AddClaim("product", "twppartner")
@@ -54,9 +54,10 @@ namespace SCSupportApp.Controllers
             }
         }
 
-        public static async Task<string> PostAuth (string token, string apiSecret)
+        public static async Task<string> PostAuth (string token, bool alpha = false)
         {
-            HttpWebResponse response = await SendWebRequest(HttpMethod.Post, TWPApiUtil.Auth_Service_EndPoint, token, null);
+            HttpWebResponse response;
+            response = await SendWebRequest(HttpMethod.Post, alpha ? TWPApiUtil.Alpha_Auth_Service_EndPoint : TWPApiUtil.Auth_Service_EndPoint, token, null);
 
             if(response.StatusCode == HttpStatusCode.Created)
             {

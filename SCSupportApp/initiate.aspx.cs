@@ -7,6 +7,8 @@ using System.Web.UI.WebControls;
 using SCSupportApp.Controllers;
 using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
+using System.Text;
+using System.IO;
 
 namespace SCSupportApp
 {
@@ -19,16 +21,10 @@ namespace SCSupportApp
         public string accountantIDString = "";
         public static string token = "";
         public static string returnAuthToken = "";
-
+        public bool alpha = true;
         public static bool tokenValid = false;
-
-        private Button btnAdd = new Button();
-        private Label lblAdd = new Label();
-
         private static string partnerAPIToken { get; set; } = null;
-
         
-
         protected void Page_Load(object sender, EventArgs e)
         {
             getAccrualSchema.Enabled = tokenValid;
@@ -44,11 +40,15 @@ namespace SCSupportApp
                 siteId = toNumber(siteIdString);
                 apiSecret = Secret.Text;
                 sendTo.Click += new EventHandler(this.sendTo_Click);
+
             }
+
+            #region create click button event handlers
+
             getAccrualSchema.Click += new EventHandler(getAccrualSchema_Click);
-            getAccrualBalance.Click += new EventHandler(this.getAccrualBalance_Click);
-            getAccrualActivity.Click += new EventHandler(this.getAccrualActivity_Click);
-            postUpdateAccrual.Click += new EventHandler(this.postUpdateAccrual_Click);
+            //getAccrualBalance.Click += new EventHandler(this.getAccrualBalance_Click);
+            //getAccrualActivity.Click += new EventHandler(this.getAccrualActivity_Click);
+            //postUpdateAccrual.Click += new EventHandler(this.postUpdateAccrual_Click);
 
             getEmployeesSchema.Click += new EventHandler(this.getEmployeesSchema_Click);
             getEmployees.Click += new EventHandler(this.getEmployees_Click);
@@ -95,7 +95,9 @@ namespace SCSupportApp
             postRejectTimeOffRequest.Click += new EventHandler(this.postRejectTimeOffRequest_Click);
             postUnApproveTimeOffRequest.Click += new EventHandler(this.postUnApproveTimeOffRequest_Click);
 
+            #endregion
         }
+
         public static int toNumber(string str, int defaultValue = 0)
         {
             int result;
@@ -107,40 +109,49 @@ namespace SCSupportApp
             siteIdString = Site.Text;
             siteId = toNumber(siteIdString);
             apiSecret = Secret.Text;
-            returnAuthToken = await Controllers.token.PostAuth(Controllers.token.creator(siteId, apiSecret), apiSecret);
+            bool partner = type.SelectedValue == "0";
+            string partnerId = Partner.Text;
+            if (server.SelectedValue == "1")
+            {
+                alpha = false;
+            }
+            returnAuthToken = await Controllers.token.PostAuth(Controllers.token.creator(siteId, apiSecret, partner, partnerId), alpha);
 
-            if (!token.Contains("Jwt.JwtBuilder")) tokenValid = true;
+            if (!string.IsNullOrEmpty(returnAuthToken)) tokenValid = true;
             getAccrualSchema.Enabled = tokenValid;
         }
 
-        protected async void getAccrualSchema_Click(object sender, EventArgs e)
+        private void catButtonHandle(object sender, EventArgs e)
         {
-            siteIdString = Site.Text;
-            siteId = toNumber(siteIdString);
-            string values = "";
+            var update = new Button();
+            update.Click += new EventHandler(updateCat_Click);
+            update.Text = $"Update Balance";
+            modal_panel.Controls.Add(update);
 
-            List<TWP_AccrualsSchema> accSchema = await TWPSDK.getAccrualSchema(siteId, returnAuthToken);
+            var getBal = new Button();
+            getBal.Click += new EventHandler(getBal_Click);
+            getBal.Text = $"Get Balance";
+            modal_panel.Controls.Add(getBal);
 
-            try
-            {
-                foreach (TWP_AccrualsSchema value in accSchema)
-                {
-                    var button = new Button
-                    {
-                        ID = value.Category,
-                        Text = value.Category,
-                        CommandArgument = value.ToString()
-                    };
-                    button.Command += Load_Items;
-                    Controls.Add(button);
-                }
-                accrualvalues.InnerText = $"{values}";
-            }
+            var getActivity = new Button();
+            getActivity.Click += new EventHandler(getAct_Click);
+            getActivity.Text = $"Activity";
+            modal_panel.Controls.Add(getActivity);
+        }
 
-            catch(Exception ex)
-            {
-                Console.WriteLine($"Validation Client Accrual Schema: an exception occurred: {ex.Message}");
-            }
+        private void getAct_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void getBal_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void updateCat_Click(object sender, EventArgs e)
+        {
+
         }
 
         private void Load_Items(object sender, CommandEventArgs e)
@@ -158,6 +169,40 @@ namespace SCSupportApp
                 {
                     Console.WriteLine($"Partner Authorization succeeded.");
                 }
+            }
+        }
+
+        #region Accruals
+
+        protected async void getAccrualSchema_Click(object sender, EventArgs e)
+        {
+            siteIdString = Site.Text;
+            siteId = toNumber(siteIdString);
+            string values = "";
+
+            List<TWP_AccrualsSchema> accSchema = await Controllers.TWPSDK.getAccrualSchema(siteId, returnAuthToken);
+
+            try
+            {
+                foreach (TWP_AccrualsSchema value in accSchema)
+                {
+                    var button = new Button
+                    {
+                        ID = value.Category,
+                        Text = value.Category,
+                        CommandArgument = value.ToString()
+                    };
+                    button.Command += Load_Items;
+                    button.CssClass = "btn btn-success";
+                    resultsPanel.Controls.Add(button);
+                    button.Click += new EventHandler(catButtonHandle);
+                }
+                accrualvalues.InnerText = $"{values}";
+            }
+
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Validation Client Accrual Schema: an exception occurred: {ex.Message}");
             }
         }
 
@@ -183,9 +228,9 @@ namespace SCSupportApp
 
         }
         
-        protected void getAccrualActivity_Click(object sender, EventArgs e)
+        protected async void getAccrualActivity_Click(object sender, EventArgs e)
         {
-
+            List<TWP_AccrualActivities> accrualActivity = await TWPSDK.getAccrualActivity(siteId, returnAuthToken);
         }
 
         protected void postUpdateAccrual_Click(object sender, EventArgs e)
@@ -193,11 +238,95 @@ namespace SCSupportApp
 
         }
 
-        protected void getEmployeesSchema_Click(object sender, EventArgs e)
+        #endregion
+
+        #region Employees
+
+        protected async void getEmployeesSchema_Click(object sender, EventArgs e)
+        {
+            List<TWP_Employee> eeSchema = await TWPSDK.ListEmployees(siteId, returnAuthToken);
+        }
+
+        protected async void getEmployees_Click(object sender, EventArgs e)
+        {
+            List<TWP_Employee> employeesList = await Controllers.TWPSDK.ListEmployees(siteId, returnAuthToken);
+            try
+            {
+                var eeTable = new Table();
+                TableRow tRow = new TableRow();
+                TableCell nameCell = new TableCell();
+                TableCell IDcell = new TableCell();
+
+                foreach (TWP_Employee employee in employeesList)
+                {
+                    nameCell.Text = employee.FullName;
+                    IDcell.Text = employee.EmployeeCode;
+                    tRow.Cells.Add(nameCell);
+                    tRow.Cells.Add(IDcell);
+                    eeTable.Rows.Add(tRow);
+                }
+                resultsPanel.Controls.Add(eeTable);
+            }
+            catch
+            {
+
+            }
+        }
+
+        protected async void downloadEmployees_Click(object sender, EventArgs e)
         {
 
+            List<TWP_Employee_Schema> eeSchema = await TWPSDK.listEESchema(siteId, returnAuthToken);
+
+            List<TWP_Employee> employees = await TWPSDK.ListEmployees(siteId, returnAuthToken);
+            StringBuilder sb = new StringBuilder();
+
+            string header = "First Name,Middle Name,Last Name,Code,Designation,Phone,Email,Start Date,Separation Date," +
+                "Export Block,WebClock Enabled,Mobile Punch Enabled,Mobile Enabled,GPS Available,";
+
+            foreach(TWP_Employee_Schema results in eeSchema)
+            {
+                int idCount = 0;
+                foreach(TWP_Identifier id in results.Identifiers)
+                {
+                    ++idCount;
+                    header += $"login{idCount.ToString()},";
+                }
+
+                int statesCount = 0;
+                foreach(TWP_State_Schema state in results.States)
+                {
+                    foreach (KeyValuePair<string, string> kvp in state.Variables)
+                    {
+                        ++statesCount;
+                        header += $"{kvp.Key.ToString()}";
+                    }
+                }
+            }
+
+            sb.AppendLine(header);
+            string body = "";
+            foreach (TWP_Employee emp in employees)
+            {
+                body = $"{emp.FirstName},{emp.MiddleName},{emp.LastName},{emp.EmployeeCode},{emp.Designation},{emp.Phone},{emp.Email},{emp.StartDate},,,,,,,,,,,,,,,,";
+                sb.AppendLine(body);
+            }
+
+            byte[] bytes = Encoding.ASCII.GetBytes(sb.ToString());
+
+            if(bytes != null)
+            {
+                Response.Clear();
+                Response.ContentType = "text/csv";
+                Response.AddHeader("Content-Length", bytes.Length.ToString());
+                Response.AddHeader("Content-disposition", "attachment; filename=\"EmployeeDetail.csv" + "\"");
+                Response.BinaryWrite(bytes);
+                Response.Flush();
+                Response.End();
+            }
         }
-        protected void getEmployees_Click(object sender, EventArgs e)
+
+        protected async void bulkUpsertEmployees_Click(object sender, EventArgs e)
         {
 
         }
@@ -232,12 +361,16 @@ namespace SCSupportApp
 
         }
 
-        protected void getLogins_Click(object sender, EventArgs e)
-        {
+        #endregion
 
+        protected async void getLogins_Click(object sender, EventArgs e)
+        {
+            List<JObject> logins = await TWPSDK.getLogins(siteId, returnAuthToken);
         }
 
-        protected void getPayrollActivities_Click(object sender, EventArgs e)
+        #region PayrollActivities
+
+        protected async void getPayrollActivities_Click(object sender, EventArgs e)
         {
 
         }
@@ -247,14 +380,23 @@ namespace SCSupportApp
 
         }
 
-        protected void getPayrollFormats_Click(object sender, EventArgs e)
+        protected async void getPayrollFormats_Click(object sender, EventArgs e)
         {
+            List<string> formats = await TWPSDK.getPayrollFormats(siteId, returnAuthToken);
+            var formatLabel = new Label()
+            {
 
+            };
+            resultsPanel.Controls.Add(resultsLabel);
         }
 
-        protected void getRules_Click(object sender, EventArgs e)
-        {
+        #endregion
 
+        #region Rules
+
+        protected async void getRules_Click(object sender, EventArgs e)
+        {
+            List<TWP_Rules> rules = await TWPSDK.getRules(siteId, returnAuthToken);
         }
 
         protected void getIntegratedSchedulingRule_Click(object sender, EventArgs e)
@@ -287,10 +429,14 @@ namespace SCSupportApp
 
         }
 
+        #endregion
+
         protected void getTimeWorksPlusSchedules_Click(object sender, EventArgs e)
         {
 
         }
+
+        #region TimeCard
 
         protected void getTimeCards_Click(object sender, EventArgs e)
         {
@@ -327,6 +473,10 @@ namespace SCSupportApp
 
         }
 
+        #endregion
+
+        #region TOR
+
         protected void getTimeOffRequestsbyEEID_Click(object sender, EventArgs e)
         {
 
@@ -342,9 +492,20 @@ namespace SCSupportApp
 
         }
 
-        protected void getSchemaTimeOffRequests_Click(object sender, EventArgs e)
+        protected async void getSchemaTimeOffRequests_Click(object sender, EventArgs e)
         {
+            List<JObject> TORs = await TWPSDK.getTORCats(siteId, returnAuthToken);
 
+            foreach (JObject Cat in TORs)
+            {
+                string category = Cat.ToString();
+                var label = new Label
+                {
+                    ID = category,
+                    Text = category
+                };
+                resultsPanel.Controls.Add(label);
+            }
         }
 
         protected void getSupervisorTimeOffRequests_Click(object sender, EventArgs e)
@@ -381,5 +542,7 @@ namespace SCSupportApp
         {
 
         }
+
+        #endregion
     }
 }

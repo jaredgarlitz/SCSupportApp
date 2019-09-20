@@ -110,8 +110,39 @@ namespace SCSupportApp.Controllers
         }
     }
 
+    public class TWP_Identifier
+    {
+        public string Id { get; set; }
+    }
+
+    public class TWP_Employee_Schema
+    {
+        public string RecordNumber { get; set; }
+        public string EmployeeCode { get; set; }
+        public string FirstName { get; set; }
+        public string MiddleName { get; set; }
+        public string LastName { get; set; }
+        public string Designation { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
+        public string StartDate { get; set; }
+        public string EndDate { get; set; }
+        public string ExportBlock { get; set; }
+        public string WebClockEnabled { get; set; }
+        public List<TWP_Identifier> Identifiers { get; set; }
+        public List<TWP_State_Schema> States { get; set; }
+
+    }
+
+    public class TWP_State_Schema
+    {
+        public string EffectiveDate { get; set; }
+        public Dictionary<string, string> Variables { get; set; }
+    }
+
     public class TWP_Employee
     {
+        public int RecordNumber { get; set; }
         public string EmployeeCode { get; set; }
 
         public string FirstName { get; set; }
@@ -126,6 +157,11 @@ namespace SCSupportApp.Controllers
 
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
+
+        public bool ExportBlock { get; set; }
+        public bool WebClockEnabled { get; set; }
+
+        public List<TWP_Identifier> Identifiers { get; set; }
 
         public List<TWP_State> States { get; set; }
 
@@ -144,6 +180,12 @@ namespace SCSupportApp.Controllers
         {
             return $"{FullName}({EmployeeCode})";
         }
+    }
+
+    public class TWP_Group
+    {
+        public List<TWP_Employee> Employees { get; set; }
+
     }
 
     public class TWP_State
@@ -353,5 +395,29 @@ namespace SCSupportApp.Controllers
         {
             return $"ChangeType: {ChangeType}, IsAbsolute: {IsAbsolute?.ToString() ?? TWPApiUtil.Api_Unset_Token}, Amount: {Amount ?? 0}, Delta: {Delta ?? 0}, SavedBy: {SavedBy ?? TWPApiUtil.Api_Unset_Token}";
         }
+    }
+
+    public class TWP_Rules
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Category { get; set; }
+        public string Status { get; set; }
+        public string EmpSelectorConfiguration { get; set; }
+        public string EnableOnOrAfterDate { get; set; }
+        public string ConfigPageTitle { get; set; }
+        public List<Rule_Config> XmlConfig { get; set; }
+        public string xmlConfig => XmlConfig.ToString();
+
+        public override string ToString()
+        {
+            return $"Name: {Name}, Description: {Description}, Category: {Category}, Status: {Status}, EmpSelectorConfiguration: {EmpSelectorConfiguration}, EnableOnOrAfterDate: {EnableOnOrAfterDate}, ConfigPageTitle: {ConfigPageTitle}" + !string.IsNullOrEmpty(xmlConfig);
+
+        }
+    }
+
+    public class Rule_Config
+    {
+        public string XmlConfiguration { get; set; }
     }
 }
