@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 using System.Text;
 using System.IO;
+using Newtonsoft.Json;
 
 namespace SCSupportApp
 {
@@ -36,66 +37,13 @@ namespace SCSupportApp
             else
             {
                 if (type.SelectedValue == "1") Partner.Enabled = false;
+                else Partner.Enabled = true;
                 siteIdString = Site.Text;
                 siteId = toNumber(siteIdString);
                 apiSecret = Secret.Text;
                 sendTo.Click += new EventHandler(this.sendTo_Click);
 
             }
-
-            #region create click button event handlers
-
-            getAccrualSchema.Click += new EventHandler(getAccrualSchema_Click);
-            //getAccrualBalance.Click += new EventHandler(this.getAccrualBalance_Click);
-            //getAccrualActivity.Click += new EventHandler(this.getAccrualActivity_Click);
-            //postUpdateAccrual.Click += new EventHandler(this.postUpdateAccrual_Click);
-
-            getEmployeesSchema.Click += new EventHandler(this.getEmployeesSchema_Click);
-            getEmployees.Click += new EventHandler(this.getEmployees_Click);
-            postUpdateEmployees.Click += new EventHandler(this.postUpdateEmployees_Click);
-            postEmployeeConnectMgrLogin.Click += new EventHandler(this.postEmployeeConnectMgrLogin_Click);
-            postEmployeeDisconnectMangerLogin.Click += new EventHandler(this.postEmployeeDisconnectMangerLogin_Click);
-            postEmployeeSetPassword.Click += new EventHandler(this.postEmployeeSetPassword_Click);
-            postEmployeeResetPassword.Click += new EventHandler(this.postEmployeeResetPassword_Click);
-            postEmployeeUpdatePassword.Click += new EventHandler(this.postEmployeeUpdatePassword_Click);
-
-            getLogins.Click += new EventHandler(this.getLogins_Click);
-
-            getPayrollActivities.Click += new EventHandler(this.getPayrollActivities_Click);
-            getPayrollActivitiesPerPayPeriod.Click += new EventHandler(this.getPayrollActivitiesPerPayPeriod_Click);
-            getPayrollFormats.Click += new EventHandler(this.getPayrollFormats_Click);
-
-            getRules.Click += new EventHandler(this.getRules_Click);
-            getIntegratedSchedulingRule.Click += new EventHandler(this.getIntegratedSchedulingRule_Click);
-            deleteExtEmployeeIDRule.Click += new EventHandler(this.deleteExtEmployeeIDRule_Click);
-            deleteIntegrationFieldsRule.Click += new EventHandler(this.deleteIntegrationFieldsRule_Click);
-            postExtEmployeeIDRule.Click += new EventHandler(this.postExtEmployeeIDRule_Click);
-            postIntegratedSchedulingRule.Click += new EventHandler(this.postIntegratedSchedulingRule_Click);
-            postIntegrationRule.Click += new EventHandler(this.postIntegrationRule_Click);
-
-            getTimeWorksPlusSchedules.Click += new EventHandler(this.getTimeWorksPlusSchedules_Click);
-
-            getTimeCards.Click += new EventHandler(this.getTimeCards_Click);
-            getTimeCardSummary.Click += new EventHandler(this.getTimeCardSummary_Click);
-            deleteTimeCardLine.Click += new EventHandler(this.deleteTimeCardLine_Click);
-            postEditTimeCardLine.Click += new EventHandler(this.postEditTimeCardLine_Click);
-            postTimeCardApproval.Click += new EventHandler(this.postTimeCardApproval_Click);
-            postAddTimeCardNote.Click += new EventHandler(this.postAddTimeCardNote_Click);
-            postAddTimeCardPunch.Click += new EventHandler(this.postAddTimeCardPunch_Click);
-
-            getTimeOffRequestsbyEEID.Click += new EventHandler(this.getTimeOffRequestsbyEEID_Click);
-            getTimeOffRequestCategories.Click += new EventHandler(this.getTimeOffRequestCategories_Click);
-            getTimeOffRequestbyEEIDdept.Click += new EventHandler(this.getTimeOffRequestbyEEIDdept_Click);
-            getSchemaTimeOffRequests.Click += new EventHandler(this.getSchemaTimeOffRequests_Click);
-            getSupervisorTimeOffRequests.Click += new EventHandler(this.getSupervisorTimeOffRequests_Click);
-            postCreateTimeOffRequest.Click += new EventHandler(this.postCreateTimeOffRequest_Click);
-            postAcceptTimeOffRequest.Click += new EventHandler(this.postAcceptTimeOffRequest_Click);
-            postApproveTimeOffRequest.Click += new EventHandler(this.postApproveTimeOffRequest_Click);
-            postCancelTimeOffRequest.Click += new EventHandler(this.postCancelTimeOffRequest_Click);
-            postRejectTimeOffRequest.Click += new EventHandler(this.postRejectTimeOffRequest_Click);
-            postUnApproveTimeOffRequest.Click += new EventHandler(this.postUnApproveTimeOffRequest_Click);
-
-            #endregion
         }
 
         public static int toNumber(string str, int defaultValue = 0)
@@ -115,7 +63,18 @@ namespace SCSupportApp
             {
                 alpha = false;
             }
-            returnAuthToken = await Controllers.token.PostAuth(Controllers.token.creator(siteId, apiSecret, partner, partnerId), alpha);
+            try
+            {
+                returnAuthToken = await Controllers.token.PostAuth(Controllers.token.creator(siteId, apiSecret, partner, partnerId), alpha);
+            }
+            catch
+            {
+                var error = new Label();
+                error.Text = "Please check your credentials and try again";
+                error.ID = "tokenFailure";
+                error.BorderColor = System.Drawing.Color.Red;
+                tokenError.Controls.Add(error);
+            }
 
             if (!string.IsNullOrEmpty(returnAuthToken)) tokenValid = true;
             getAccrualSchema.Enabled = tokenValid;
@@ -172,6 +131,32 @@ namespace SCSupportApp
             }
         }
 
+        protected void createButton(string Name, string text, bool success = true)
+        {
+            var button = new Button();
+
+            if (success == true) button.CssClass = "btn btn-success";
+            else button.CssClass = "btn btn-danger";
+            button.Text = text;
+            button.ID = Name;
+            resultsPanel.Controls.Add(button);
+        }
+        protected void downloadFile(string name, StringBuilder body)
+        {
+            byte[] bytes = Encoding.ASCII.GetBytes(body.ToString());
+
+            if (bytes != null)
+            {
+                Response.Clear();
+                Response.ContentType = "text/csv";
+                Response.AddHeader("Content-Length", bytes.Length.ToString());
+                Response.AddHeader("Content-disposition", "attachment; filename=\""+ name + ".csv" + "\"");
+                Response.BinaryWrite(bytes);
+                Response.Flush();
+                Response.End();
+            }
+        }
+
         #region Accruals
 
         protected async void getAccrualSchema_Click(object sender, EventArgs e)
@@ -186,16 +171,7 @@ namespace SCSupportApp
             {
                 foreach (TWP_AccrualsSchema value in accSchema)
                 {
-                    var button = new Button
-                    {
-                        ID = value.Category,
-                        Text = value.Category,
-                        CommandArgument = value.ToString()
-                    };
-                    button.Command += Load_Items;
-                    button.CssClass = "btn btn-success";
-                    resultsPanel.Controls.Add(button);
-                    button.Click += new EventHandler(catButtonHandle);
+                    createButton(value.Category, value.Category);
                 }
                 accrualvalues.InnerText = $"{values}";
             }
@@ -206,20 +182,21 @@ namespace SCSupportApp
             }
         }
 
-        protected void getAccrualBalance_Click(object sender, EventArgs e)
+        protected async void getAccrualBalance_Click(object sender, EventArgs e)
         {
-            Controllers.TWP_AccrualsSchema Schema = new TWP_AccrualsSchema()
-            {
-                Category = "",
-                IsHidden = "",
-                Effective = "",
-                Expires = "",
-                Id = "",
-                Value = ""
-            };
             try
             {
-                getAccrualSchema_Click(sender, e);
+                List<TWP_Accruals> accBalances = await TWPSDK.getAccruals(siteId, returnAuthToken);
+
+                foreach(TWP_Accruals results in accBalances)
+                {
+                    foreach(TWP_AccrualValues balances in results.Balances)
+                    {
+                        string name = $"{results.FirstName} {results.LastName} {balances.Category}";
+                        string text = $"{results.FirstName} {results.LastName} {balances.Category} {balances.Value}";
+                        createButton(name, text);
+                    }
+                }
             }
             catch
             {
@@ -252,20 +229,10 @@ namespace SCSupportApp
             List<TWP_Employee> employeesList = await Controllers.TWPSDK.ListEmployees(siteId, returnAuthToken);
             try
             {
-                var eeTable = new Table();
-                TableRow tRow = new TableRow();
-                TableCell nameCell = new TableCell();
-                TableCell IDcell = new TableCell();
-
-                foreach (TWP_Employee employee in employeesList)
+                foreach(TWP_Employee employee in employeesList)
                 {
-                    nameCell.Text = employee.FullName;
-                    IDcell.Text = employee.EmployeeCode;
-                    tRow.Cells.Add(nameCell);
-                    tRow.Cells.Add(IDcell);
-                    eeTable.Rows.Add(tRow);
+                    createButton(employee.FullName, $"{employee.FullName}");
                 }
-                resultsPanel.Controls.Add(eeTable);
             }
             catch
             {
@@ -277,29 +244,25 @@ namespace SCSupportApp
         {
 
             List<TWP_Employee_Schema> eeSchema = await TWPSDK.listEESchema(siteId, returnAuthToken);
+            IList<string> schemaState = eeSchema[0].States[0].Variables.Keys.ToList();
 
             List<TWP_Employee> employees = await TWPSDK.ListEmployees(siteId, returnAuthToken);
             StringBuilder sb = new StringBuilder();
 
-            string header = "First Name,Middle Name,Last Name,Code,Designation,Phone,Email,Start Date,Separation Date," +
-                "Export Block,WebClock Enabled,Mobile Punch Enabled,Mobile Enabled,GPS Available,";
+            int idCount = 3;
+            int statesCount = 0;
+
+            string header = "RecordNumber,First Name,Middle Name,Last Name,Code,Designation,Phone,Email,Start Date,Separation Date," +
+                "Export Block,WebClock Enabled,login1,login2,login3,";
 
             foreach(TWP_Employee_Schema results in eeSchema)
             {
-                int idCount = 0;
-                foreach(TWP_Identifier id in results.Identifiers)
-                {
-                    ++idCount;
-                    header += $"login{idCount.ToString()},";
-                }
-
-                int statesCount = 0;
                 foreach(TWP_State_Schema state in results.States)
                 {
                     foreach (KeyValuePair<string, string> kvp in state.Variables)
                     {
                         ++statesCount;
-                        header += $"{kvp.Key.ToString()}";
+                        header += $"{kvp.Key.ToString()},";
                     }
                 }
             }
@@ -308,27 +271,149 @@ namespace SCSupportApp
             string body = "";
             foreach (TWP_Employee emp in employees)
             {
-                body = $"{emp.FirstName},{emp.MiddleName},{emp.LastName},{emp.EmployeeCode},{emp.Designation},{emp.Phone},{emp.Email},{emp.StartDate},,,,,,,,,,,,,,,,";
+                body = $"{emp.RecordNumber},{emp.FirstName},{emp.MiddleName},{emp.LastName},{emp.EmployeeCode},{emp.Designation},{emp.Phone},{emp.Email},{emp.StartDate},{emp.EndDate},{emp.ExportBlock},{emp.WebClockEnabled},";
+
+                try
+                {
+                    foreach (TWP_Identifier id in emp.Identifiers)
+                    {
+                        if (!string.IsNullOrEmpty(id.Id))
+                            body += $"{id.Id},";
+                    }
+                    if (emp.Identifiers.Count < idCount) body += string.Concat(Enumerable.Repeat(",", idCount - emp.Identifiers.Count));
+                }
+                catch
+                {
+                    body += $",,,";
+                }
+
+
+
+                try
+                {
+                    foreach (TWP_State state in emp.States)
+                    {
+                        foreach (string varName in schemaState)
+                        {
+                            foreach (KeyValuePair<string, string> kvp in state.Variables)
+                            {
+                                if (kvp.Key == varName)
+                                {
+                                    body += $"{kvp.Value}";
+                                }
+
+                            }
+                            body += ",";
+                        }
+                    }
+                }
+                catch
+                {
+                    body += string.Concat(Enumerable.Repeat(",", statesCount));
+                }
                 sb.AppendLine(body);
             }
 
-            byte[] bytes = Encoding.ASCII.GetBytes(sb.ToString());
-
-            if(bytes != null)
-            {
-                Response.Clear();
-                Response.ContentType = "text/csv";
-                Response.AddHeader("Content-Length", bytes.Length.ToString());
-                Response.AddHeader("Content-disposition", "attachment; filename=\"EmployeeDetail.csv" + "\"");
-                Response.BinaryWrite(bytes);
-                Response.Flush();
-                Response.End();
-            }
+            downloadFile("EmployeeDetail", sb);
         }
 
         protected async void bulkUpsertEmployees_Click(object sender, EventArgs e)
         {
+            List<TWP_EE_Upsert> updatedEE = new List<TWP_EE_Upsert>();
+            
+            
+            if (EEImport.HasFile)
+            {
+                StreamReader csvreader = new StreamReader(EEImport.FileContent);
+                while(!csvreader.EndOfStream)
+                {
+                    var line = csvreader.ReadLine();
+                    var values = line.Split(',');
+                    
+                    
+                    
+                    List<Variable> varsList = new List<Variable>();
+                    List<TWP_Employee_Schema> eeSchema = await TWPSDK.listEESchema(siteId, returnAuthToken);
 
+                    
+
+                    
+                    
+                    IList<string> varValue = new List<string>();
+                    
+
+                    int valCount = 15;
+
+                    
+
+                    if (values[0] != "RecordNumber")
+                    {
+                        List<TWP_Identifier> idList = new List<TWP_Identifier>();
+                        List<string> testid = new List<string>();
+                        Variable vars = new Variable();
+                        
+                        if (values.Length > 13)
+                        {
+                            for (int i = 12; i <= 14; i++)
+                            {
+                                TWP_Identifier id = new TWP_Identifier();
+                                id.Id = !string.IsNullOrEmpty(values[i]) ? values[i].ToString() : "";
+                                idList.Add(id);
+                                testid.Add(id.Id);
+                            }
+
+                        }
+
+                        foreach (string key in eeSchema[0].States[0].Variables.Keys)
+                        {
+                            Variable varItem = new Variable();
+                            
+                            string value = values[valCount];
+                            KeyValuePair<string, string> variablesDic = new KeyValuePair<string, string>(key, value);
+                            if (value.Contains("$")) value = value.Replace("$", "");
+                            //if (!variablesDic(key)) variablesDic.Add(key, value);
+                            varItem.Variables = variablesDic;
+                            varsList.Add(varItem);
+                            //if (!vars.Variables.ContainsKey(key)) vars.Variables.Add(key, value);
+                            valCount++;
+                        }
+
+
+                        TWP_EE_Upsert ee = new TWP_EE_Upsert()
+                        {
+                            FirstName = values[1],
+                            MiddleName = values[2],
+                            LastName = values[3],
+                            EmployeeCode = values[4],
+                            Designation = values[5],
+                            Phone = values[6],
+                            Email = values[7],
+                            StartDate = values[8],
+                            EndDate = values[9],
+                            ExportBlock = Convert.ToBoolean(values[10]),
+                            WebClockEnabled = Convert.ToBoolean(values[11]),
+                            //Identifiers = idList,
+                            //States = new TWP_upsert_State()
+                            //{
+                            //    EffectiveDate = DateTime.Now.ToString("yyyy-MM-dd"),
+                            //    Variables = varsList
+                            //}
+                        };
+
+                        try
+                        {
+                            await TWPSDK.UpsertEmployee(siteId, returnAuthToken, values[0], ee);
+                            createButton(ee.EmployeeCode, $"{ee.FirstName} {ee.LastName}");
+
+                        }
+                        catch
+                        {
+                            createButton(ee.EmployeeCode, $"{ee.FirstName} {ee.LastName}", false);
+                        }
+                    }
+                }
+            }
+            
         }
 
         protected void postUpdateEmployees_Click(object sender, EventArgs e)
@@ -365,19 +450,55 @@ namespace SCSupportApp
 
         protected async void getLogins_Click(object sender, EventArgs e)
         {
-            List<JObject> logins = await TWPSDK.getLogins(siteId, returnAuthToken);
+            List<TWP_Login> logins = await TWPSDK.getLogins(siteId, returnAuthToken);
+            foreach(TWP_Login login in logins)
+            {
+                createButton(login.LoginName, login.LoginName);
+            }
         }
 
         #region PayrollActivities
 
         protected async void getPayrollActivities_Click(object sender, EventArgs e)
         {
-
+            var response = await TWPSDK.getActivitiesBySDED(siteId, returnAuthToken);
+            if (string.IsNullOrEmpty(response.Error))
+            {
+                if (!string.IsNullOrEmpty(response.FormatString))
+                {
+                    string file = response.FormatString.Replace("\"", "");
+                    string[] strSeparators = new string[] { "\r\n" };
+                    string[] result;
+                    result = file.Split(strSeparators, StringSplitOptions.None);
+                    StringBuilder sb = new StringBuilder();
+                    foreach (string line in result)
+                    {
+                        sb.AppendLine(line);
+                    }
+                    downloadFile("payroll", sb);
+                }
+            }
         }
 
-        protected void getPayrollActivitiesPerPayPeriod_Click(object sender, EventArgs e)
+        protected async void getPayrollActivitiesPerPayPeriod_Click(object sender, EventArgs e)
         {
-
+            var response = await TWPSDK.GetPayrollActivities(siteId, returnAuthToken, null, null, "sum3");
+            if(string.IsNullOrEmpty(response.Error))
+            {
+                if (!string.IsNullOrEmpty(response.FormatString))
+                {
+                    string file = response.FormatString.Replace("\"", "");
+                    string[] strSeparators = new string[] { "\r\n" };
+                    string[] result;
+                    result = file.Split(strSeparators, StringSplitOptions.None);
+                    StringBuilder sb = new StringBuilder();
+                    foreach (string line in result)
+                    {
+                        sb.AppendLine(line);
+                    }
+                    downloadFile("payroll", sb);
+                }
+            }
         }
 
         protected async void getPayrollFormats_Click(object sender, EventArgs e)
@@ -544,5 +665,6 @@ namespace SCSupportApp
         }
 
         #endregion
+
     }
 }

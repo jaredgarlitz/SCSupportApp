@@ -132,9 +132,9 @@ namespace SCSupportApp.Controllers
             return AllEmployees;
         }
 
-        public static async Task UpsertEmployee(int siteId, string APIToken, TWP_Employee updateEmployee)
+        public static async Task UpsertEmployee(int siteId, string APIToken, string eeID, TWP_EE_Upsert updateEmployee)
         {
-            string upsertURL = $"{TWPApiUtil.Employees_EndPoint}/{updateEmployee.EmployeeCode}?upsert=true";
+            string upsertURL = $"{TWPApiUtil.Employees_EndPoint}/{eeID}?idType=recordNumber&upsert=true";
 
             await CallTWPAPI(siteId, APIToken, upsertURL, HttpMethod.Post, updateEmployee);
         }
@@ -209,14 +209,33 @@ namespace SCSupportApp.Controllers
             {
                 requestBody = new TWP_PayrollActivitiesRequest(employeeIds);
             }
+            else
+            {
+                List<string> eeid = new List<string>();
+                var response = await ListEmployees(siteId, APIToken);
+                foreach(TWP_Employee ee in response)
+                {
+                    eeid.Add(ee.EmployeeCode);
+                }
+                requestBody = new TWP_PayrollActivitiesRequest(eeid);
+            }
 
             return JsonConvert.DeserializeObject<TWP_PayrollActivities>(
                 await CallTWPAPI(siteId, APIToken, payrollActivityURL, HttpMethod.Post, requestBody));
         }
 
-        public static async void getActivitiesByPayPeriod (int siteId, string APIToken)
+        public static async Task<TWP_PayrollActivities>getActivitiesBySDED (int siteId, string APIToken, DateTime? startDate = null,DateTime? endDate = null, string payrollFormat = null)
         {
+            string startdate = TWPApiUtil.FormatAPIDate(startDate ?? DateTime.Now);
+            string enddate = TWPApiUtil.FormatAPIDate(endDate ?? DateTime.Now);
+            string payrollActivityURL = $"{TWPApiUtil.Payroll_Activities_EndPoint}?beginDate={startdate}&endDate={enddate}";
+            if(!string.IsNullOrEmpty(payrollFormat))
+            {
+                payrollActivityURL += $"&format={payrollFormat}";
+            }
 
+            
+            return JsonConvert.DeserializeObject<TWP_PayrollActivities>( await CallTWPAPI(siteId, APIToken, payrollActivityURL, HttpMethod.Post));
         }
 
         #endregion
@@ -421,11 +440,19 @@ namespace SCSupportApp.Controllers
 
         #region Logins
 
-        public static async Task<List<JObject>> getLogins (int siteId, string APIToken)
+        public static async Task<List<TWP_Login>> getLogins (int siteId, string APIToken, string loginName = null)
         {
-            string apiResponse = await CallTWPAPI(siteId, APIToken, $"{TWPApiUtil.Logins}", HttpMethod.Get);
+            List<TWP_Login> AllLogins = new List<TWP_Login>();
 
-            return JsonConvert.DeserializeObject<List<JObject>>(apiResponse);
+            string url = $"{TWPApiUtil.Logins}";
+            if (!string.IsNullOrEmpty(loginName)) url += $"?ids={loginName}";
+            string apiResponse = await CallTWPAPI(siteId, APIToken, url, HttpMethod.Get);
+
+            TWP_API_List_Response result = JsonConvert.DeserializeObject<TWP_API_List_Response>(apiResponse);
+
+            AllLogins.AddRange(result.Results.Select(loginJson => loginJson.ToObject<TWP_Login>()));
+
+            return AllLogins;
         }
 
         #endregion

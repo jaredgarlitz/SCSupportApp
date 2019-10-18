@@ -1,7 +1,6 @@
 ﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site1.Master" AutoEventWireup="true" CodeBehind="initiate.aspx.cs" Inherits="SCSupportApp.initiate" Async="true" %>
 
 <asp:Content ID="tokenGen" ContentPlaceHolderID="genTokenPlaceHolder" runat="server">
-    <%--<asp:DropDownList ID="typeSelect" runat="server" />--%>
     <div class="container">
         <asp:DropDownList ID="type" runat="server" AutoPostBack="true">
             <asp:ListItem Text="Accountant" Value="0" />
@@ -17,6 +16,13 @@
         <asp:Button ID="sendTo" class="btn btn-success btn-sm" Text="Check" runat="server" />
         <asp:Label ID="loadLabel" runat="server" />
         <asp:Label ID="tokenID" runat="server" />
+        <div class="container">
+            <div class="col">
+                <asp:Panel ID="tokenError" runat="server">
+
+                </asp:Panel>
+            </div>
+        </div>
     </div>
     <div class="container-sm">
         <div class="container">
@@ -36,10 +42,16 @@
                                     <div class="container">
                                         <div class="row">
                                             <div class="col-1">
-                                                <asp:Button type="button" class="btn btn-primary btn-sm" ID="getAccrualSchema" runat="server" Text="Get Accrual Schema" />
+                                                <asp:Button type="button" class="btn btn-primary btn-sm" ID="getAccrualSchema" runat="server" Text="Get Schema" OnClick="getAccrualSchema_Click"/>
                                             </div>
                                             <div class="col-1">
                                                 <label id="accrualvalues" runat="server"></label>
+                                            </div>
+                                        </div>
+                                        <p />
+                                        <div class="row">
+                                            <div class="col-1">
+                                                <asp:Button type="button" class="btn btn-primary btn-sm" ID="getAccrualBalance" runat="server" Text="Get Balances" OnClick="getAccrualBalance_Click" />
                                             </div>
                                         </div>
                                         <p />
@@ -98,55 +110,50 @@
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getEmployeesSchema" runat="server" Text="Get Employee Schema" />
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getEmployeesSchema" runat="server" Text="Get Employee Schema" OnClick="getEmployeesSchema_Click"/>
                                         </div>
-                                    </div>
+<%--                                    </div>
                                     <p />
-                                    <div class="row">
+                                    <div class="row">--%>
                                         <div class="col">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getEmployees" runat="server" Text="Get Employees"></asp:Button>
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getEmployees" runat="server" Text="Get Employees" OnClick="getEmployees_Click"></asp:Button>
                                         </div>
-<%--                                        <div class="container">
-                                            <asp:Table runat="server" ID="employeeTable" >
-                                                <asp:TableHeaderRow>
-                                                    <asp:TableHeaderCell>Full Name</asp:TableHeaderCell>
-                                                    <asp:TableHeaderCell>Employee Code</asp:TableHeaderCell>
-                                                    <asp:TableHeaderCell></asp:TableHeaderCell>
-                                                </asp:TableHeaderRow>
-                                            </asp:Table>
-                                        </div>--%>
                                         <div class="col">
                                             <asp:Button type="button" class="btn btn-success btn-sm" ID="downloadEmployees" runat="server" Text="Download .csv" OnClick="downloadEmployees_Click" />
                                         </div>
+                                    </div>
+                                    <p></p>
+                                    <div class="row">
                                         <div class="col">
-                                            <asp:Button type="button" class="btn btn-dark btn-sm" ID="bulkUpsertEmployees" runat="server" Text="Import Update File" OnClick="bulkUpsertEmployees_Click" />
+                                            <asp:FileUpload type="file" class="btn btn-dark btn-sm" text="Import" id="EEImport" runat="server" />
+                                            <asp:Button type="button" class="btn btn-dark" Text="Bulk Import EE's" ID="bulkImport" runat="server" OnClick="bulkUpsertEmployees_Click" />
                                         </div>
                                     </div>
                                     <p />
                                     <div class="row">
                                         <div class="col-sm">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postUpdateEmployees" runat="server" Text="POST Update Employees" />
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postUpdateEmployees" runat="server" Text="POST Update Employees" OnClick="postUpdateEmployees_Click" Visible="false"/>
                                         </div>
                                     </div>
                                     <p />
                                     <div class="row">
                                         <div class="col-sm">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postEmployeeConnectMgrLogin" runat="server" Text="Connect EE/Sup Login" />
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postEmployeeConnectMgrLogin" runat="server" Text="Connect EE/Sup Login" OnClick="postEmployeeConnectMgrLogin_Click" Visible ="false"/>
                                         </div>
                                         <div class="col">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postEmployeeDisconnectMangerLogin" runat="server" Text="Disconnect EE/Sup Login" />
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postEmployeeDisconnectMangerLogin" runat="server" Text="Disconnect EE/Sup Login" OnClick="postEmployeeDisconnectMangerLogin_Click" Visible="false"/>
                                         </div>
                                     </div>
                                     <p />
                                     <div class="row">
                                         <div class="col-sm">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postEmployeeSetPassword" runat="server" Text="Set EE Password" />
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postEmployeeSetPassword" runat="server" Text="Set EE Password" OnClick="postEmployeeSetPassword_Click" Visible="false"/>
                                         </div>
                                         <div class="col-sm">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postEmployeeResetPassword" runat="server" Text="Reset EE Password" />
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postEmployeeResetPassword" runat="server" Text="Reset EE Password" OnClick="postEmployeeResetPassword_Click" Visible="false"/>
                                         </div>
                                         <div class="col-sm">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postEmployeeUpdatePassword" runat="server" Text="Update EE Password" />
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postEmployeeUpdatePassword" runat="server" Text="Update EE Password" OnClick="postEmployeeUpdatePassword_Click" Visible="false"/>
                                         </div>
                                     </div>
                                 </div>
@@ -162,7 +169,7 @@
                             </div>
                             <div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-parent="#addPunch">
                                 <div class="card-body">
-                                    <asp:Button type="button" class="btn btn-primary btn-sm" ID="getLogins" runat="server" Text="Get Logins"></asp:Button>
+                                    <asp:Button type="button" class="btn btn-primary btn-sm" ID="getLogins" runat="server" Text="Get Logins" OnClick="getLogins_Click"></asp:Button>
                                 </div>
                             </div>
                         </div>
@@ -177,14 +184,14 @@
                             <div id="collapseFive" class="collapse" aria-labelledby="headingFive" data-parent="#addPunch">
                                 <div class="card-body">
                                     <div class="row">
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getPayrollActivities" runat="server" Text="Get Payroll Activities" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getPayrollActivities" runat="server" Text="Get Payroll Activities" OnClick="getPayrollActivities_Click" Visible="false"/>
                                         </div>
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getPayrollActivitiesPerPayPeriod" runat="server" Text="Payroll Act. by Period" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getPayrollActivitiesPerPayPeriod" runat="server" Text="Payroll Act. by Period" OnClick="getPayrollActivitiesPerPayPeriod_Click"/>
                                         </div>
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getPayrollFormats" runat="server" Text="Get Formats" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getPayrollFormats" runat="server" Text="Get Formats" OnClick="getPayrollFormats_Click" Visible="false"/>
                                         </div>
                                     </div>
                                 </div>
@@ -201,32 +208,32 @@
                             <div id="collapseSix" class="collapse" aria-labelledby="headingSix" data-parent="#addPunch">
                                 <div class="card-body">
                                     <div class="row">
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getRules" runat="server" Text="Get Rules" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getRules" runat="server" Text="Get Rules" OnClick="getRules_Click" Visible="false"/>
                                         </div>
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getIntegratedSchedulingRule" runat="server" Text="Get Integrated Scheduling Rule" />
-                                        </div>
-                                    </div>
-                                    <p />
-                                    <div class="row">
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="deleteExtEmployeeIDRule" runat="server" Text="Delete ExtEmployeeID" />
-                                        </div>
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="deleteIntegrationFieldsRule" runat="server" Text="Delete IntegrationFields Rule" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getIntegratedSchedulingRule" runat="server" Text="Get Integrated Scheduling Rule" OnClick="getIntegratedSchedulingRule_Click" Visible="false"/>
                                         </div>
                                     </div>
                                     <p />
                                     <div class="row">
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postExtEmployeeIDRule" runat="server" Text="Add ExtEmployeeID" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="deleteExtEmployeeIDRule" runat="server" Text="Delete ExtEmployeeID" OnClick="deleteExtEmployeeIDRule_Click" Visible="false"/>
                                         </div>
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postIntegratedSchedulingRule" runat="server" Text="Add Int Scheduling" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="deleteIntegrationFieldsRule" runat="server" Text="Delete IntegrationFields Rule" OnClick="deleteIntegrationFieldsRule_Click" Visible="false"/>
                                         </div>
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postIntegrationRule" runat="server" Text="Post Integration Rule" />
+                                    </div>
+                                    <p />
+                                    <div class="row">
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postExtEmployeeIDRule" runat="server" Text="Add ExtEmployeeID" OnClick="postExtEmployeeIDRule_Click" Visible="false"/>
+                                        </div>
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postIntegratedSchedulingRule" runat="server" Text="Add Int Scheduling" OnClick="postIntegratedSchedulingRule_Click" Visible="false"/>
+                                        </div>
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postIntegrationRule" runat="server" Text="Post Integration Rule" OnClick="postIntegrationRule_Click" Visible="false"/>
                                         </div>
                                     </div>
                                 </div>
@@ -243,8 +250,8 @@
                             <div id="collapseSeven" class="collapse" aria-labelledby="headingSeven" data-parent="#addPunch">
                                 <div class="card-body">
                                     <div class="row">
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getTimeWorksPlusSchedules" runat="server" Text="Get TWP Schedules"></asp:Button>
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getTimeWorksPlusSchedules" runat="server" Text="Get TWP Schedules" OnClick="getTimeWorksPlusSchedules_Click" Visible="false"></asp:Button>
                                         </div>
                                     </div>
                                 </div>
@@ -261,32 +268,32 @@
                             <div id="collapseEight" class="collapse" aria-labelledby="headingEight" data-parent="#addPunch">
                                 <div class="card-body">
                                     <div class="row">
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getTimeCards" runat="server" Text="Get Time Cards" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getTimeCards" runat="server" Text="Get Time Cards" OnClick="getTimeCards_Click" Visible="false"/>
                                         </div>
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getTimeCardSummary" runat="server" Text="Get Time Card Summary" />
-                                        </div>
-                                    </div>
-                                    <p />
-                                    <div class="row">
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="deleteTimeCardLine" runat="server" Text="Delete Time CardLine" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getTimeCardSummary" runat="server" Text="Get Time Card Summary" OnClick="getTimeCardSummary_Click" Visible="false"/>
                                         </div>
                                     </div>
                                     <p />
                                     <div class="row">
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postEditTimeCardLine" runat="server" Text="Edit TimeCard Line" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="deleteTimeCardLine" runat="server" Text="Delete Time CardLine" OnClick="deleteTimeCardLine_Click" Visible="false"/>
                                         </div>
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postTimeCardApproval" runat="server" Text="TimeCard Approval" />
+                                    </div>
+                                    <p />
+                                    <div class="row">
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postEditTimeCardLine" runat="server" Text="Edit TimeCard Line" OnClick="postEditTimeCardLine_Click" Visible="false"/>
                                         </div>
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postAddTimeCardNote" runat="server" Text="Add TimeCard Note" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postTimeCardApproval" runat="server" Text="TimeCard Approval" OnClick="postTimeCardApproval_Click" Visible="false"/>
                                         </div>
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postAddTimeCardPunch" runat="server" Text="Add TimeCard Punch" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postAddTimeCardNote" runat="server" Text="Add TimeCard Note" OnClick="postAddTimeCardNote_Click" Visible="false"/>
+                                        </div>
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postAddTimeCardPunch" runat="server" Text="Add TimeCard Punch" OnClick="postAddTimeCardPunch_Click" Visible="false"/>
                                         </div>
                                     </div>
                                 </div>
@@ -303,41 +310,41 @@
                             <div id="collapseNine" class="collapse" aria-labelledby="headingNine" data-parent="#addPunch">
                                 <div class="card-body">
                                     <div class="row">
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getTimeOffRequestsbyEEID" runat="server" Text="Get TOR by EE ID" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getTimeOffRequestsbyEEID" runat="server" Text="Get TOR by EE ID" OnClick="getTimeOffRequestsbyEEID_Click" Visible="false"/>
                                         </div>
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getTimeOffRequestCategories" runat="server" Text="Get TOR Categories" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getTimeOffRequestCategories" runat="server" Text="Get TOR Categories" OnClick="getTimeOffRequestCategories_Click" Visible="false"/>
                                         </div>
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getTimeOffRequestbyEEIDdept" runat="server" Text="Get TOR by EE ID(Dep)" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getTimeOffRequestbyEEIDdept" runat="server" Text="Get TOR by EE ID(Dep)" OnClick="getTimeOffRequestbyEEIDdept_Click" Visible="false"/>
                                         </div>
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getSchemaTimeOffRequests" runat="server" Text="Get Schema TOR" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getSchemaTimeOffRequests" runat="server" Text="Get Schema TOR" OnClick="getSchemaTimeOffRequests_Click" Visible="false"/>
                                         </div>
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getSupervisorTimeOffRequests" runat="server" Text="Get Supervisor TOR" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="getSupervisorTimeOffRequests" runat="server" Text="Get Supervisor TOR" OnClick="getSupervisorTimeOffRequests_Click" Visible="false"/>
                                         </div>
                                     </div>
                                     <p />
                                     <div class="row">
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postCreateTimeOffRequest" runat="server" Text="Create TOR" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postCreateTimeOffRequest" runat="server" Text="Create TOR" OnClick="postCreateTimeOffRequest_Click" Visible="false"/>
                                         </div>
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postAcceptTimeOffRequest" runat="server" Text="Accept TOR" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postAcceptTimeOffRequest" runat="server" Text="Accept TOR" OnClick="postAcceptTimeOffRequest_Click" Visible="false"/>
                                         </div>
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postApproveTimeOffRequest" runat="server" Text="Approve TOR" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postApproveTimeOffRequest" runat="server" Text="Approve TOR" OnClick="postApproveTimeOffRequest_Click" Visible="false"/>
                                         </div>
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postCancelTimeOffRequest" runat="server" Text="Cancel TOR" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postCancelTimeOffRequest" runat="server" Text="Cancel TOR" OnClick="postCancelTimeOffRequest_Click" Visible="false"/>
                                         </div>
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postRejectTimeOffRequest" runat="server" Text="Reject TOR" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postRejectTimeOffRequest" runat="server" Text="Reject TOR" OnClick="postRejectTimeOffRequest_Click" Visible="false"/>
                                         </div>
-                                        <div class="col-1">
-                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postUnApproveTimeOffRequest" runat="server" Text="Un-Approve TOR" />
+                                        <div class="col">
+                                            <asp:Button type="button" class="btn btn-primary btn-sm" ID="postUnApproveTimeOffRequest" runat="server" Text="Un-Approve TOR" OnClick="postUnApproveTimeOffRequest_Click" Visible="false"/>
                                         </div>
                                     </div>
                                 </div>

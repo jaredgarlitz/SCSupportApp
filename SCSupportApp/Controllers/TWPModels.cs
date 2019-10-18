@@ -86,7 +86,7 @@ namespace SCSupportApp.Controllers
         {
             string retval = $"iss: {Iss}, prod: {Product}, site: {(SiteInfo?.Id.ToString() ?? "<null>")}, exp: {Exp}";
 
-            if(User != null && User.Id != null)
+            if (User != null && User.Id != null)
             {
                 retval += $", user: {User.Id}";
             }
@@ -140,9 +140,28 @@ namespace SCSupportApp.Controllers
         public Dictionary<string, string> Variables { get; set; }
     }
 
+    public class TWP_EE_Upsert
+    {
+        public string EmployeeCode { get; set; }
+        public string FirstName { get; set; }
+        public string MiddleName { get; set; }
+        public string LastName { get; set; }
+        public string Designation { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
+        public string StartDate { get; set; }
+        public string EndDate { get; set; }
+        public bool ExportBlock { get; set; }
+        public bool WebClockEnabled { get; set; }
+        //[JsonProperty(PropertyName = "Id")]
+        public List<TWP_Identifier> Identifiers { get; set; }
+        public TWP_upsert_State States { get; set; }
+        public TWP_EE_Upsert() { }
+
+    }
     public class TWP_Employee
     {
-        public int RecordNumber { get; set; }
+        public string RecordNumber { get; set; }
         public string EmployeeCode { get; set; }
 
         public string FirstName { get; set; }
@@ -161,6 +180,7 @@ namespace SCSupportApp.Controllers
         public bool ExportBlock { get; set; }
         public bool WebClockEnabled { get; set; }
 
+        [JsonProperty(PropertyName = "Id")]
         public List<TWP_Identifier> Identifiers { get; set; }
 
         public List<TWP_State> States { get; set; }
@@ -188,6 +208,18 @@ namespace SCSupportApp.Controllers
 
     }
 
+    public class TWP_upsert_State
+    {
+        public string EffectiveDate { get; set; }
+
+        public List<Variable> Variables { get; set; }
+    }
+
+    public class Variable
+    {
+        public KeyValuePair<string, string> Variables { get; set; }
+    }
+
     public class TWP_State
     {
         public DateTime? EffectiveDate { get; set; }
@@ -208,6 +240,21 @@ namespace SCSupportApp.Controllers
         {
             return $"Id: {Id}";
         }
+    }
+
+    public class TWP_Login
+    {
+        public string LoginName { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
+        public string Guid { get; set; }
+        public string SiteNumber { get; set; }
+        public string SiteName { get; set; }
+        public string AccountType { get; set; }
+        public int AccountTypeNumber { get; set; }
+
     }
 
     public class TWP_PayrollActivitiesRequest : List<TWP_ID>
@@ -232,7 +279,7 @@ namespace SCSupportApp.Controllers
 
         public override string ToString()
         {
-            if(!String.IsNullOrEmpty(Error))
+            if (!String.IsNullOrEmpty(Error))
             {
                 return $"Error: {Error}";
             }
@@ -241,12 +288,12 @@ namespace SCSupportApp.Controllers
 
             string retval = $"Data: {shortData}";
 
-            if(FormatBinary ?? false)
+            if (FormatBinary ?? false)
             {
                 retval = "Binary " + retval;
             }
 
-            if(!String.IsNullOrEmpty(MimeType))
+            if (!String.IsNullOrEmpty(MimeType))
             {
                 retval = $"MimeType: {MimeType}" + retval;
             }
@@ -285,7 +332,7 @@ namespace SCSupportApp.Controllers
     {
         [JsonProperty("id")]
         public string Id { get; set; }
-        
+
         [JsonProperty("category")]
         public string Category { get; set; }
 
@@ -420,4 +467,147 @@ namespace SCSupportApp.Controllers
     {
         public string XmlConfiguration { get; set; }
     }
+
+    public class TimeCard
+    {
+        public string SiteTimeZone { get; set; }
+        public string LocalizationInfo { get; set; }
+        public DateTime? PayPeriodBeginDate { get; set; }
+        public DateTime? PayPeriodEneDate { get; set; }
+        public DateTime? PayPeriodPrevBeginDate { get; set; }
+        public DateTime? PayPeriodPrevEndDate { get; set; }
+        public string[] PunchInOutTypes { get; set; }
+        public string ClockPrompts { get; set; }
+        public TWPPunchCategory PunchCategories { get; set; }
+        public bool IntelligentClock { get; set; }
+        public string TimeCards { get; set; }
+    }
+
+    public class TWPPunchCategory
+    {
+        public bool Accruable { get; set; }
+        public string _baseCategory { get; set; }
+        public bool IsRegular { get; set; }
+        public string OT1Name { get; set; }
+        public string OT2Name { get; set; }
+        public bool OTEligible { get; set; }
+        public string OutputValueColumn { get; set; }
+        public bool SelectableAmount { get; set; }
+        public bool SelectableHours { get; set; }
+        public bool SelectableTimes { get; set; }
+        public int SortKey { get; set; }
+        public bool TimeOffRequestable { get; set; }
+        public string UnpaidName { get; set; }
+        public bool UserSelectable { get; set; }
+        public string m_BaseCategoryLong { get; set; }
+    }
+
+    public class TimeCards
+    {
+        public TWP_Employee Employee { get; set; }
+        public TWPSummary Summary { get; set; }
+        public Dates[] Dates { get; set; }
+        public Notifications[] Notifications { get; set; }
+    }
+
+    public class TWPSummary
+    {
+        public CategoryLaborPromptGrouping CategoryLaborPromptGrouping { get; set; }
+        public SumLines[] Lines { get; set; }
+        public Categories[] Categories { get; set; }
+
+    }
+
+    public class CategoryLaborPromptGrouping
+    {
+        public BaseCategory[] BaseCategory { get; set; }
+    }
+
+    public class BaseCategory
+    {
+        public string GroupedBy { get; set; }
+        public string GroupValue { get; set; }
+        public string BaseCategory1 { get; set; }
+        public string OT1Category { get; set; }
+        public string OT2Category { get; set; }
+        public string UnpaidCategory { get; set; }
+        public int TotalUnpaidSeconds { get; set; }
+        public int TotalSeconds { get; set; }
+        public int TotalBaseAmount { get; set; }
+        public int TotalAdditionalPay { get; set; }
+        public int TotalBaseSeconds { get; set; }
+        public int TotalOT1Seconds { get; set; }
+        public int TotalOT2Seconds { get; set; }
+    }
+
+    public class SumLines
+    {
+        public string BaseCategory { get; set; }
+        public string OT1Category { get; set; }
+        public string OT2Category { get; set; }
+        public string UnpaidCategory { get; set; }
+        public int TotalUnpaidSeconds { get; set; }
+        public string Totals { get; set; }
+        public int TotalSeconds { get; set; }
+        public int TotalBaseAmount { get; set; }
+        public int TotalBaseSeconds { get; set; }
+        public int TotalOT1Seconds { get; set; }
+        public int TotalOT2Seconds { get; set; }
+        public string Properties { get; set; }
+    }
+
+    public class Categories
+    {
+        public string BaseCategory { get; set; }
+        public string OT1Category { get; set; }
+        public string OT2Category { get; set; }
+        public string UnpaidCategory { get; set; }
+        public int TotalBAseAmount { get; set; }
+        public int TotalOt1Seconds { get; set; }
+        public int TotalOT2Seconds { get; set; }
+        public int TotalUnpaidSeconds { get; set; }
+        public int TotalSeconds { get; set; }
+        public int TotalBaseSeconds { get; set; }
+        public string TotalTimeCardValueFields { get; set; }
+    }
+
+    public class Dates
+    {
+        public string[] Alerts { get; set; }
+        public string ApprovalStatus { get; set; }
+        public string DatedNote { get; set; }
+        public string approvalDesc { get; set; }
+        public bool softLocked { get; set; }
+        public string Date { get; set; }
+        public string PayPeriodBeginDate { get; set; }
+        public string PayPeriodEndDate { get; set; }
+        public string FirstDayOfWeek { get; set; }
+        public bool IsFromFinal { get; set; }
+        public string[] Lines { get; set; }
+        public string[] Categories { get; set; }
+        public string LinesTotal { get; set; }
+
+    }
+
+    public class Notifications
+    {
+        public DateTime? Date { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public int Seconds { get; set; }
+        public bool NotConsideredOtInSeconds { get; set; }
+        public string Message { get; set; }
+        public string ShortMessage { get; set; }
+        public string Subject { get; set; }
+
+    }
+
+    public class TWP_Format_Response
+    {
+        public string Error { get; set; }
+        public string FormatBinary { get; set; }
+        public string FormatString { get; set; }
+        public string MimeType { get; set; }
+    }
+
 }
