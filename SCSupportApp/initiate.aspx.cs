@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Text;
 using System.IO;
 using Newtonsoft.Json;
+using System.Collections.Specialized;
 
 namespace SCSupportApp
 {
@@ -135,10 +136,10 @@ namespace SCSupportApp
         {
             var button = new Button();
 
-            if (success == true) button.CssClass = "btn btn-success";
-            else button.CssClass = "btn btn-danger";
+            if (success == true) button.CssClass = "btn btn-success jaredpad";
+            else button.CssClass = "btn btn-danger jaredpad";
             button.Text = text;
-            button.ID = Name;
+            button.ID = "jaredpad";
             resultsPanel.Controls.Add(button);
         }
         protected void downloadFile(string name, StringBuilder body)
@@ -329,28 +330,30 @@ namespace SCSupportApp
                 {
                     var line = csvreader.ReadLine();
                     var values = line.Split(',');
-                    
-                    
-                    
+
                     List<Variable> varsList = new List<Variable>();
+                    Dictionary<string, string> varsDic = new Dictionary<string, string>();
+                    TWP_upsert_State vars = new TWP_upsert_State();
                     List<TWP_Employee_Schema> eeSchema = await TWPSDK.listEESchema(siteId, returnAuthToken);
-
-                    
-
-                    
+                    List<TWP_upsert_State> states = new List<TWP_upsert_State>();
                     
                     IList<string> varValue = new List<string>();
                     
 
                     int valCount = 15;
 
-                    
+
+                    foreach (string key in eeSchema[0].States[0].Variables.Keys)
+                    {
+                        string currkey = key;
+                        if (!varsDic.ContainsKey(key)) varsDic.Add(key, valCount.ToString());
+                        valCount++;
+                    }
 
                     if (values[0] != "RecordNumber")
                     {
                         List<TWP_Identifier> idList = new List<TWP_Identifier>();
                         List<string> testid = new List<string>();
-                        Variable vars = new Variable();
                         
                         if (values.Length > 13)
                         {
@@ -363,21 +366,25 @@ namespace SCSupportApp
                             }
 
                         }
+                        
 
-                        foreach (string key in eeSchema[0].States[0].Variables.Keys)
+                        for (var i = 0; i < eeSchema[0].States[0].Variables.Keys.Count; i++)
                         {
-                            Variable varItem = new Variable();
+                            int keyInd = i + 15;
+                            string value = values[keyInd];
                             
-                            string value = values[valCount];
-                            KeyValuePair<string, string> variablesDic = new KeyValuePair<string, string>(key, value);
-                            if (value.Contains("$")) value = value.Replace("$", "");
-                            //if (!variablesDic(key)) variablesDic.Add(key, value);
-                            varItem.Variables = variablesDic;
-                            varsList.Add(varItem);
-                            //if (!vars.Variables.ContainsKey(key)) vars.Variables.Add(key, value);
-                            valCount++;
+                            string key = varsDic.FirstOrDefault(x => x.Value == keyInd.ToString()).Key;
+                            varsDic[key] = value;
+                            if (value == "" && key != "EmployeeType")
+                            {
+                                varsDic.Remove(key);
+                            }
+                            
                         }
 
+                        vars.EffectiveDate = DateTime.Now.ToString("yyyy-MM-dd");
+                        vars.Variables = varsDic;
+                        states.Add(vars);
 
                         TWP_EE_Upsert ee = new TWP_EE_Upsert()
                         {
@@ -393,11 +400,7 @@ namespace SCSupportApp
                             ExportBlock = Convert.ToBoolean(values[10]),
                             WebClockEnabled = Convert.ToBoolean(values[11]),
                             //Identifiers = idList,
-                            //States = new TWP_upsert_State()
-                            //{
-                            //    EffectiveDate = DateTime.Now.ToString("yyyy-MM-dd"),
-                            //    Variables = varsList
-                            //}
+                            States = states
                         };
 
                         try

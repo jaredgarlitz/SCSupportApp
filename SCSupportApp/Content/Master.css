@@ -1,4 +1,6 @@
-﻿#header{
+﻿
+
+#header{
     color:#247BA0;
     text-align: center;
     font-size: 20px;
@@ -50,4 +52,15 @@ li a:hover {
 #con{
     border:double;
     border-color:burlywood;
+}
+.jaredpad{
+    padding: 5px;
+    margin: 5px;
+}
+#jaredpad {
+    margin: 5px;
+}
+
+span input[type="submit"] {
+    margin: 5px;
 }

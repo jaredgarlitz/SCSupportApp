@@ -155,7 +155,7 @@ namespace SCSupportApp.Controllers
         public bool WebClockEnabled { get; set; }
         //[JsonProperty(PropertyName = "Id")]
         public List<TWP_Identifier> Identifiers { get; set; }
-        public TWP_upsert_State States { get; set; }
+        public List<TWP_upsert_State> States { get; set; }
         public TWP_EE_Upsert() { }
 
     }
@@ -212,7 +212,7 @@ namespace SCSupportApp.Controllers
     {
         public string EffectiveDate { get; set; }
 
-        public List<Variable> Variables { get; set; }
+        public Dictionary<string, string> Variables { get; set; }
     }
 
     public class Variable
